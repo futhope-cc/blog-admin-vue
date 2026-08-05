@@ -1,7 +1,6 @@
 import type {
   Article,
   Category,
-  Comment,
   FileItem,
   Project,
   Tag,
@@ -72,7 +71,7 @@ console.log(hello('Blog'))
 
 ## 总结
 
-通过本文，我们了解了 \`${title}\` 的基本用法。欢迎在评论区交流。
+通过本文，我们了解了 \`${title}\` 的基本用法。欢迎留言交流。
 `
 
 export const articles: Article[] = [
@@ -171,7 +170,7 @@ export const projects: Project[] = [
   {
     id: 1,
     name: 'BlogHub 个人博客系统',
-    description: '基于 Vue3 + Spring Boot 的个人博客与项目展示平台，支持 Markdown 写作、评论互动与数据统计。',
+    description: '基于 Vue3 + Spring Boot 的个人博客与项目展示平台，支持 Markdown 写作与数据统计。',
     technology: 'Vue3, TypeScript, Spring Boot, MySQL, Redis',
     githubUrl: 'https://github.com/example/blog-hub',
     image: '',
@@ -194,54 +193,6 @@ export const projects: Project[] = [
     githubUrl: 'https://github.com/example/code-genius',
     image: '',
     createTime: '2026-05-21 09:40:00',
-  },
-]
-
-export const comments: Comment[] = [
-  {
-    id: 1,
-    articleId: 1,
-    username: '小明',
-    content: '转码参数讲得很清楚，正好解决我的问题，感谢分享！',
-    parentId: null,
-    status: 'approved',
-    createTime: '2026-07-13 10:20:00',
-  },
-  {
-    id: 2,
-    articleId: 1,
-    username: 'Alice',
-    content: '能否补充一下硬件加速相关的配置？',
-    parentId: null,
-    status: 'pending',
-    createTime: '2026-07-14 21:05:00',
-  },
-  {
-    id: 3,
-    articleId: 2,
-    username: '老王',
-    content: 'YOLOv8 的数据集格式还是不够友好，建议补充标注工具推荐。',
-    parentId: null,
-    status: 'pending',
-    createTime: '2026-07-10 08:30:00',
-  },
-  {
-    id: 4,
-    articleId: 3,
-    username: 'Bob',
-    content: 'MyBatis Plus 的分页插件确实省事，收藏了。',
-    parentId: null,
-    status: 'approved',
-    createTime: '2026-07-01 12:00:00',
-  },
-  {
-    id: 5,
-    articleId: 4,
-    username: 'spammer123',
-    content: '免费推广，点击 https://bad.example 领取福利！！！',
-    parentId: null,
-    status: 'rejected',
-    createTime: '2026-07-19 02:10:00',
   },
 ]
 

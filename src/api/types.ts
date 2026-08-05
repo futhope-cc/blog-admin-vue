@@ -77,17 +77,6 @@ export interface Project {
   createTime: string
 }
 
-export interface Comment {
-  id: number
-  articleId: number
-  articleTitle?: string
-  username: string
-  content: string
-  parentId: number | null
-  status: 'pending' | 'approved' | 'rejected'
-  createTime: string
-}
-
 export interface FileItem {
   id: number
   name: string
@@ -101,7 +90,6 @@ export interface StatsOverview {
   articleCount: number
   projectCount: number
   viewCount: number
-  commentCount: number
 }
 
 export interface TrendPoint {

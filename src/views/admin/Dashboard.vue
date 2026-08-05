@@ -20,7 +20,6 @@ const cards = computed(() => {
     { label: '文章总数', value: o?.articleCount ?? 0, icon: 'Document', color: '#409eff' },
     { label: '项目总数', value: o?.projectCount ?? 0, icon: 'FolderOpened', color: '#67c23a' },
     { label: '总浏览量', value: o?.viewCount ?? 0, icon: 'View', color: '#e6a23c' },
-    { label: '评论数量', value: o?.commentCount ?? 0, icon: 'ChatDotRound', color: '#f56c6c' },
   ]
 })
 

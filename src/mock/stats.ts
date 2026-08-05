@@ -1,5 +1,5 @@
 import { registerMock } from '@/api/request'
-import { articles, categories, comments, projects } from './db'
+import { articles, categories, projects } from './db'
 import { ok } from './helpers'
 import type { DashboardStats } from '@/api/types'
 
@@ -32,7 +32,6 @@ registerMock('get', '/admin/stats/dashboard', () => {
       articleCount: articles.length,
       projectCount: projects.length,
       viewCount: articles.reduce((sum, a) => sum + a.viewCount, 0),
-      commentCount: comments.filter((c) => c.status === 'approved').length,
     },
     trend: TREND,
     categoryDist,

@@ -17,7 +17,6 @@ const menus = [
   { path: '/category', title: '分类管理', icon: 'Files' },
   { path: '/tag', title: '标签管理', icon: 'CollectionTag' },
   { path: '/project', title: '项目管理', icon: 'FolderOpened' },
-  { path: '/comment', title: '评论管理', icon: 'ChatDotRound' },
   { path: '/file', title: '文件管理', icon: 'Folder' },
 ]
 

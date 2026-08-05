@@ -58,12 +58,6 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '项目管理' },
       },
       {
-        path: 'comment',
-        name: 'CommentManage',
-        component: () => import('@/views/admin/CommentManage.vue'),
-        meta: { title: '评论管理' },
-      },
-      {
         path: 'file',
         name: 'FileManage',
         component: () => import('@/views/admin/FileManage.vue'),
