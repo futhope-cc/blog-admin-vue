@@ -19,7 +19,9 @@ const cards = computed(() => {
   return [
     { label: '文章总数', value: o?.articleCount ?? 0, icon: 'Document', color: '#409eff' },
     { label: '项目总数', value: o?.projectCount ?? 0, icon: 'FolderOpened', color: '#67c23a' },
-    { label: '总浏览量', value: o?.viewCount ?? 0, icon: 'View', color: '#e6a23c' },
+    { label: '分类总数', value: o?.categoryCount ?? 0, icon: 'Folder', color: '#e6a23c' },
+    { label: '标签总数', value: o?.tagCount ?? 0, icon: 'CollectionTag', color: '#909399' },
+    { label: '总浏览量', value: o?.viewCount ?? 0, icon: 'View', color: '#f56c6c' },
   ]
 })
 
@@ -27,30 +29,19 @@ const trendOption = computed<EChartsOption>(() => {
   const trend = stats.value?.trend ?? []
   return {
     tooltip: { trigger: 'axis' },
-    legend: { data: ['浏览量', '新增文章'] },
     grid: { left: 16, right: 16, top: 36, bottom: 16, containLabel: true },
     xAxis: {
       type: 'category',
-      boundaryGap: false,
-      data: trend.map((t) => t.date.slice(5)),
+      data: trend.map((t) => t.week),
     },
-    yAxis: [{ type: 'value', name: '浏览量' }, { type: 'value', name: '文章数' }],
+    yAxis: [{ type: 'value', name: '文章数' }],
     series: [
-      {
-        name: '浏览量',
-        type: 'line',
-        smooth: true,
-        areaStyle: { opacity: 0.15 },
-        itemStyle: { color: '#409eff' },
-        data: trend.map((t) => t.views),
-      },
       {
         name: '新增文章',
         type: 'bar',
-        yAxisIndex: 1,
-        barWidth: 16,
-        itemStyle: { color: '#67c23a', borderRadius: [3, 3, 0, 0] },
-        data: trend.map((t) => t.articles),
+        barWidth: 18,
+        itemStyle: { color: '#409eff', borderRadius: [3, 3, 0, 0] },
+        data: trend.map((t) => t.count),
       },
     ],
   }
@@ -70,7 +61,7 @@ const categoryOption = computed<EChartsOption>(() => {
         avoidLabelOverlap: true,
         itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
         label: { formatter: '{b}: {c}' },
-        data: dist.map((d) => ({ name: d.name, value: d.value })),
+        data: dist.map((d) => ({ name: d.name, value: d.count })),
       },
     ],
   }

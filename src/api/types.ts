@@ -173,17 +173,18 @@ export interface StatsOverview {
   articleCount: number
   projectCount: number
   viewCount: number
+  categoryCount: number
+  tagCount: number
 }
 
 export interface TrendPoint {
-  date: string
-  views: number
-  articles: number
+  week: string
+  count: number
 }
 
 export interface CategoryDist {
   name: string
-  value: number
+  count: number
 }
 
 export interface HotArticle {
