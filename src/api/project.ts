@@ -1,29 +1,33 @@
 import request from './request'
-import type { PageResult, Project } from './types'
+import type { PageResult, Project, ProjectQuery, ProjectRequest } from './types'
 
-export function getProjectList(params: {
-  page: number
-  pageSize: number
-  keyword?: string
-}) {
+export function getProjectPage(params: ProjectQuery) {
   return request<PageResult<Project>>({
     method: 'get',
-    url: '/admin/project/list',
+    url: '/project/page',
     params,
   })
 }
 
-export function saveProject(data: Partial<Project>) {
+export function addProject(data: ProjectRequest) {
   return request<Project>({
-    method: data.id ? 'put' : 'post',
-    url: data.id ? `/admin/project/${data.id}` : '/admin/project',
+    method: 'post',
+    url: '/project',
     data,
   })
 }
 
-export function deleteProject(id: number) {
+export function updateProject(id: string, data: ProjectRequest) {
+  return request<Project>({
+    method: 'put',
+    url: `/project/${id}`,
+    data,
+  })
+}
+
+export function deleteProject(id: string) {
   return request<null>({
     method: 'delete',
-    url: `/admin/project/${id}`,
+    url: `/project/${id}`,
   })
 }

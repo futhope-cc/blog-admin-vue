@@ -20,9 +20,9 @@ export const useUserStore = defineStore('user', {
   actions: {
     async login(params: LoginParams) {
       const res = await loginApi(params)
-      this.token = res.token
-      this.userInfo = res.user
-      localStorage.setItem('blog_admin_token', res.token)
+      this.token = res.tokenValue
+      this.userInfo = res.userInfo
+      localStorage.setItem('blog_admin_token', res.tokenValue)
     },
     async fetchUserInfo() {
       if (!this.token) return

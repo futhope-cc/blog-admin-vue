@@ -1,15 +1,10 @@
 import request from './request'
-import type { LoginParams, UserInfo } from './types'
-
-export interface LoginResult {
-  token: string
-  user: UserInfo
-}
+import type { LoginParams, LoginResult, UserInfo } from './types'
 
 export function login(data: LoginParams) {
   return request<LoginResult>({
     method: 'post',
-    url: '/admin/login',
+    url: '/user/login',
     data,
   })
 }
@@ -17,14 +12,14 @@ export function login(data: LoginParams) {
 export function getUserInfo() {
   return request<UserInfo>({
     method: 'get',
-    url: '/admin/user/info',
+    url: '/user/info',
   })
 }
 
 export function logout() {
   return request<null>({
     method: 'post',
-    url: '/admin/logout',
+    url: '/user/logout',
   })
 }
 
@@ -33,8 +28,8 @@ export function changePassword(data: {
   newPassword: string
 }) {
   return request<null>({
-    method: 'post',
-    url: '/admin/password',
+    method: 'put',
+    url: '/user/password',
     data,
   })
 }

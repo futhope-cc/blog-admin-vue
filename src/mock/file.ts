@@ -1,25 +1,26 @@
 import { registerMock } from '@/api/request'
 import { files } from './db'
-import { fail, genId, ok, pageData } from './helpers'
-import type { FileItem, PageResult } from '@/api/types'
+import { fail, genId, now, ok, pageResult } from './helpers'
+import type { FileItem, FileQuery, PageResult } from '@/api/types'
 
 const MOCK_IMG = 'data:image/svg+xml;utf8,'
 
-registerMock('get', '/admin/file/list', (config) => {
-  const page = Number(config.params?.page) || 1
-  const pageSize = Number(config.params?.pageSize) || 12
-  const type = config.params?.type || ''
-  const keyword = (config.params?.keyword || '').toString().toLowerCase()
+registerMock('get', '/file/page', (config) => {
+  const query = config.params as FileQuery
+  const current = Number(query.current) || 1
+  const size = Number(query.size) || 12
+  const type = query.type || ''
+  const keyword = (query.keyword || '').toString().toLowerCase()
 
   let list = [...files]
   if (type) list = list.filter((f) => f.type === type)
   if (keyword) list = list.filter((f) => f.name.toLowerCase().includes(keyword))
-  list.sort((a, b) => b.id - a.id)
-  const { total, list: slice } = pageData(list, page, pageSize)
-  return ok<PageResult<FileItem>>({ total, list: slice })
+  list.sort((a, b) => Number(b.id) - Number(a.id))
+  const { records, total, current: c, size: s } = pageResult(list, current, size)
+  return ok<PageResult<FileItem>>({ records, total, current: c, size: s })
 })
 
-registerMock('post', '/admin/file/upload', (config) => {
+registerMock('post', '/file/upload', (config) => {
   const raw = config.data
   const file =
     raw instanceof FormData ? (raw.get('file') as File | null) : raw?.file
@@ -33,14 +34,14 @@ registerMock('post', '/admin/file/upload', (config) => {
       : '',
     type: isImage ? 'image' : 'file',
     size: file.size,
-    uploadTime: new Date().toLocaleString('zh-CN', { hour12: false }).replaceAll('/', '-'),
+    uploadTime: now(),
   }
   files.unshift(item)
   return ok(item)
 })
 
-registerMock('delete', /^\/admin\/file\/\d+$/, (config) => {
-  const id = Number((config.url as string).split('/').pop())
+registerMock('delete', /^\/file\/.+$/, (config) => {
+  const id = (config.url as string).split('/').pop()!
   const idx = files.findIndex((f) => f.id === id)
   if (idx === -1) return fail('文件不存在')
   files.splice(idx, 1)

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { deleteCategory, getCategoryList, saveCategory } from '@/api/category'
+import { deleteCategory, getCategoryList, addCategory, updateCategory } from '@/api/category'
 import type { Category } from '@/api/types'
 
 const loading = ref(false)
@@ -9,7 +9,7 @@ const list = ref<Category[]>([])
 
 const dialogVisible = ref(false)
 const saving = ref(false)
-const editingId = ref<number | null>(null)
+const editingId = ref<string | null>(null)
 const formRef = ref()
 const form = reactive({ name: '', sort: 0 })
 
@@ -45,11 +45,12 @@ async function submit() {
   await formRef.value.validate()
   saving.value = true
   try {
-    await saveCategory({
-      id: editingId.value ?? undefined,
-      name: form.name,
-      sort: form.sort,
-    })
+    const payload = { name: form.name, sort: form.sort }
+    if (editingId.value) {
+      await updateCategory(editingId.value, payload)
+    } else {
+      await addCategory(payload)
+    }
     ElMessage.success(editingId.value ? '分类已更新' : '分类已创建')
     dialogVisible.value = false
     load()

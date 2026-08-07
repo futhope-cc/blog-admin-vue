@@ -1,31 +1,32 @@
 import request from './request'
-import type { Category } from './types'
+import type { Category, CategoryRequest } from './types'
 
 export function getCategoryList() {
   return request<Category[]>({
     method: 'get',
-    url: '/admin/category/list',
+    url: '/category/list',
   })
 }
 
-export function getAllCategories() {
-  return request<Category[]>({
-    method: 'get',
-    url: '/admin/category/all',
-  })
-}
-
-export function saveCategory(data: Partial<Category>) {
+export function addCategory(data: CategoryRequest) {
   return request<Category>({
-    method: data.id ? 'put' : 'post',
-    url: data.id ? `/admin/category/${data.id}` : '/admin/category',
+    method: 'post',
+    url: '/category',
     data,
   })
 }
 
-export function deleteCategory(id: number) {
+export function updateCategory(id: string, data: CategoryRequest) {
+  return request<Category>({
+    method: 'put',
+    url: `/category/${id}`,
+    data,
+  })
+}
+
+export function deleteCategory(id: string) {
   return request<null>({
     method: 'delete',
-    url: `/admin/category/${id}`,
+    url: `/category/${id}`,
   })
 }

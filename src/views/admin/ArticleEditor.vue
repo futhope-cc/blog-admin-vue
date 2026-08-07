@@ -2,18 +2,18 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getArticleDetail, saveArticle } from '@/api/article'
-import { getAllCategories } from '@/api/category'
-import { getAllTags } from '@/api/tag'
+import { addArticle, updateArticle } from '@/api/article'
+import { getCategoryList } from '@/api/category'
+import { getTagList } from '@/api/tag'
 import { uploadFile } from '@/api/file'
-import type { ArticleStatus, Category, Tag } from '@/api/types'
+import { ARTICLE_STATUS, type Article, type ArticleStatus, type Category, type Tag } from '@/api/types'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const isEdit = computed(() => !!route.params.id)
-const articleId = Number(route.params.id)
+const articleId = route.params.id as string
 
 const loading = ref(false)
 const saving = ref(false)
@@ -25,9 +25,9 @@ const form = reactive({
   summary: '',
   content: '',
   cover: '',
-  categoryId: undefined as number | undefined,
-  tagIds: [] as number[],
-  status: 'draft' as ArticleStatus,
+  categoryId: undefined as string | undefined,
+  tagIds: [] as string[],
+  status: ARTICLE_STATUS.DRAFT as ArticleStatus,
 })
 
 const formRef = ref()
@@ -41,18 +41,18 @@ const rules = {
 
 async function loadDetail() {
   if (!isEdit) return
-  loading.value = true
-  try {
-    const article = await getArticleDetail(articleId)
-    form.title = article.title
-    form.summary = article.summary
-    form.content = article.content
-    form.cover = article.cover
-    form.categoryId = article.categoryId
-    form.tagIds = article.tagIds
-  } finally {
-    loading.value = false
+  const record = (history.state as { article?: Article })?.article
+  if (!record || record.id !== articleId) {
+    ElMessage.warning('请从文章列表进入编辑')
+    router.push('/article/list')
+    return
   }
+  form.title = record.title
+  form.summary = record.summary
+  form.content = record.content
+  form.cover = record.cover
+  form.categoryId = record.categoryId
+  form.tagIds = record.tagIds
 }
 
 async function handleCoverUpload(options: any) {
@@ -70,17 +70,20 @@ async function submit(status: ArticleStatus) {
   await formRef.value.validate()
   saving.value = true
   try {
-    await saveArticle({
-      id: isEdit ? articleId : undefined,
+    const payload = {
       title: form.title,
       summary: form.summary,
       content: form.content,
       cover: form.cover,
       categoryId: form.categoryId!,
       tagIds: form.tagIds,
-      status,
-    })
-    ElMessage.success(status === 'published' ? '文章已发布' : '已保存为草稿')
+    }
+    if (isEdit) {
+      await updateArticle(articleId, payload)
+    } else {
+      await addArticle({ ...payload, status })
+    }
+    ElMessage.success(status === ARTICLE_STATUS.PUBLISHED ? '文章已发布' : '已保存为草稿')
     router.push('/article/list')
   } finally {
     saving.value = false
@@ -89,8 +92,8 @@ async function submit(status: ArticleStatus) {
 
 onMounted(async () => {
   const [catRes, tagRes] = await Promise.all([
-    getAllCategories(),
-    getAllTags(),
+    getCategoryList(),
+    getTagList(),
   ])
   categories.value = catRes
   tags.value = tagRes
@@ -136,7 +139,7 @@ onMounted(async () => {
           <el-button
             size="large"
             :loading="saving"
-            @click="submit('draft')"
+            @click="submit(ARTICLE_STATUS.DRAFT)"
           >
             存草稿
           </el-button>
@@ -144,7 +147,7 @@ onMounted(async () => {
             type="primary"
             size="large"
             :loading="saving"
-            @click="submit('published')"
+            @click="submit(ARTICLE_STATUS.PUBLISHED)"
           >
             发布文章
           </el-button>

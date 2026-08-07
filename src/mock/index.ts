@@ -5,5 +5,6 @@ import './tag'
 import './project'
 import './file'
 import './stats'
+import './user'
 
 export {}

@@ -13,9 +13,9 @@ const TREND = [
   { date: '2026-07-28', views: 2087, articles: 2 },
 ]
 
-registerMock('get', '/admin/stats/dashboard', () => {
+registerMock('get', '/stats/dashboard', () => {
   const hot = [...articles]
-    .filter((a) => a.status === 'published')
+    .filter((a) => a.status === 1)
     .sort((a, b) => b.viewCount - a.viewCount)
     .slice(0, 5)
     .map((a) => ({ id: a.id, title: a.title, viewCount: a.viewCount }))

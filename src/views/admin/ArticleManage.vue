@@ -4,12 +4,12 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   deleteArticle,
-  getArticleList,
+  getArticlePage,
   updateArticleStatus,
 } from '@/api/article'
-import { getAllCategories } from '@/api/category'
-import { getAllTags } from '@/api/tag'
-import type { Article, ArticleStatus, Category, Tag } from '@/api/types'
+import { getCategoryList } from '@/api/category'
+import { getTagList } from '@/api/tag'
+import { ARTICLE_STATUS, type Article, type ArticleStatus, type Category, type Tag } from '@/api/types'
 
 const router = useRouter()
 const loading = ref(false)
@@ -19,32 +19,32 @@ const categories = ref<Category[]>([])
 const tags = ref<Tag[]>([])
 
 const query = reactive({
-  page: 1,
-  pageSize: 10,
+  current: 1,
+  size: 10,
   keyword: '',
-  categoryId: undefined as number | undefined,
-  tagId: undefined as number | undefined,
-  status: '' as ArticleStatus | '',
+  categoryId: undefined as string | undefined,
+  tagId: undefined as string | undefined,
+  status: undefined as ArticleStatus | undefined,
 })
 
 const statusMap: Record<ArticleStatus, { text: string; type: 'info' | 'success' | 'warning' }> = {
-  draft: { text: '草稿', type: 'info' },
-  published: { text: '已发布', type: 'success' },
-  offline: { text: '已下线', type: 'warning' },
+  [ARTICLE_STATUS.DRAFT]: { text: '草稿', type: 'info' },
+  [ARTICLE_STATUS.PUBLISHED]: { text: '已发布', type: 'success' },
+  [ARTICLE_STATUS.OFFLINE]: { text: '已下线', type: 'warning' },
 }
 
 async function load() {
   loading.value = true
   try {
-    const res = await getArticleList({
-      page: query.page,
-      pageSize: query.pageSize,
+    const res = await getArticlePage({
+      current: query.current,
+      size: query.size,
       keyword: query.keyword || undefined,
       categoryId: query.categoryId,
       tagId: query.tagId,
       status: query.status,
     })
-    list.value = res.list
+    list.value = res.records
     total.value = res.total
   } finally {
     loading.value = false
@@ -52,7 +52,7 @@ async function load() {
 }
 
 function search() {
-  query.page = 1
+  query.current = 1
   load()
 }
 
@@ -60,12 +60,12 @@ function reset() {
   query.keyword = ''
   query.categoryId = undefined
   query.tagId = undefined
-  query.status = ''
+  query.status = undefined
   search()
 }
 
 function handlePageChange(page: number) {
-  query.page = page
+  query.current = page
   load()
 }
 
@@ -74,13 +74,17 @@ function goCreate() {
 }
 
 function goEdit(row: Article) {
-  router.push(`/article/edit/${row.id}`)
+  router.push({
+    path: `/article/edit/${row.id}`,
+    state: { article: row } as Record<string, any>,
+  })
 }
 
 async function toggleStatus(row: Article) {
-  const target: ArticleStatus = row.status === 'published' ? 'offline' : 'published'
+  const target: ArticleStatus =
+    row.status === ARTICLE_STATUS.PUBLISHED ? ARTICLE_STATUS.OFFLINE : ARTICLE_STATUS.PUBLISHED
   await ElMessageBox.confirm(
-    target === 'published' ? '确定发布该文章吗？' : '确定下线该文章吗？',
+    target === ARTICLE_STATUS.PUBLISHED ? '确定发布该文章吗？' : '确定下线该文章吗？',
     '提示',
     { type: 'warning' },
   )
@@ -97,15 +101,15 @@ async function handleDelete(row: Article) {
   )
   await deleteArticle(row.id)
   ElMessage.success('删除成功')
-  if (list.value.length === 1 && query.page > 1) query.page -= 1
+  if (list.value.length === 1 && query.current > 1) query.current -= 1
   load()
 }
 
 onMounted(async () => {
   load()
   const [catRes, tagRes] = await Promise.all([
-    getAllCategories(),
-    getAllTags(),
+    getCategoryList(),
+    getTagList(),
   ])
   categories.value = catRes
   tags.value = tagRes
@@ -161,9 +165,9 @@ onMounted(async () => {
             class="w-36"
             @change="search"
           >
-            <el-option label="草稿" value="draft" />
-            <el-option label="已发布" value="published" />
-            <el-option label="已下线" value="offline" />
+            <el-option label="草稿" :value="ARTICLE_STATUS.DRAFT" />
+            <el-option label="已发布" :value="ARTICLE_STATUS.PUBLISHED" />
+            <el-option label="已下线" :value="ARTICLE_STATUS.OFFLINE" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -224,10 +228,10 @@ onMounted(async () => {
             <el-button link type="primary" @click="goEdit(row)">编辑</el-button>
             <el-button
               link
-              :type="row.status === 'published' ? 'warning' : 'success'"
+              :type="row.status === ARTICLE_STATUS.PUBLISHED ? 'warning' : 'success'"
               @click="toggleStatus(row)"
             >
-              {{ row.status === 'published' ? '下线' : '发布' }}
+              {{ row.status === ARTICLE_STATUS.PUBLISHED ? '下线' : '发布' }}
             </el-button>
             <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
@@ -236,8 +240,8 @@ onMounted(async () => {
 
       <div class="mt-4 flex justify-end">
         <el-pagination
-          v-model:current-page="query.page"
-          v-model:page-size="query.pageSize"
+          v-model:current-page="query.current"
+          v-model:page-size="query.size"
           :total="total"
           :page-sizes="[10, 20, 50]"
           layout="total, sizes, prev, pager, next"

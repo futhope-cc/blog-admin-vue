@@ -4,6 +4,6 @@ import type { DashboardStats } from './types'
 export function getDashboardStats() {
   return request<DashboardStats>({
     method: 'get',
-    url: '/admin/stats/dashboard',
+    url: '/stats/dashboard',
   })
 }

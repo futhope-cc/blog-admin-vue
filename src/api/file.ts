@@ -1,15 +1,10 @@
 import request from './request'
-import type { FileItem, PageResult } from './types'
+import type { FileItem, FileQuery, PageResult } from './types'
 
-export function getFileList(params: {
-  page: number
-  pageSize: number
-  type?: string
-  keyword?: string
-}) {
+export function getFilePage(params: FileQuery) {
   return request<PageResult<FileItem>>({
     method: 'get',
-    url: '/admin/file/list',
+    url: '/file/page',
     params,
   })
 }
@@ -19,15 +14,15 @@ export function uploadFile(file: File) {
   formData.append('file', file)
   return request<FileItem>({
     method: 'post',
-    url: '/admin/file/upload',
+    url: '/file/upload',
     data: formData,
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 }
 
-export function deleteFile(id: number) {
+export function deleteFile(id: string) {
   return request<null>({
     method: 'delete',
-    url: `/admin/file/${id}`,
+    url: `/file/${id}`,
   })
 }

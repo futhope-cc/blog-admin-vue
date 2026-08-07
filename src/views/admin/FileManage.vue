@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { deleteFile, getFileList, uploadFile } from '@/api/file'
+import { deleteFile, getFilePage, uploadFile } from '@/api/file'
 import type { FileItem } from '@/api/types'
 
 const loading = ref(false)
 const uploading = ref(false)
 const list = ref<FileItem[]>([])
 const total = ref(0)
-const query = reactive({ page: 1, pageSize: 12, type: '', keyword: '' })
+const query = reactive({ current: 1, size: 12, type: '', keyword: '' })
 
 const previewVisible = ref(false)
 const previewUrl = ref('')
@@ -22,13 +22,13 @@ function formatSize(size: number): string {
 async function load() {
   loading.value = true
   try {
-    const res = await getFileList({
-      page: query.page,
-      pageSize: query.pageSize,
+    const res = await getFilePage({
+      current: query.current,
+      size: query.size,
       type: query.type,
       keyword: query.keyword || undefined,
     })
-    list.value = res.list
+    list.value = res.records
     total.value = res.total
   } finally {
     loading.value = false
@@ -36,7 +36,7 @@ async function load() {
 }
 
 function search() {
-  query.page = 1
+  query.current = 1
   load()
 }
 
@@ -47,7 +47,7 @@ function reset() {
 }
 
 function handlePageChange(page: number) {
-  query.page = page
+  query.current = page
   load()
 }
 
@@ -176,8 +176,8 @@ onMounted(load)
 
       <div class="mt-4 flex justify-end">
         <el-pagination
-          v-model:current-page="query.page"
-          v-model:page-size="query.pageSize"
+          v-model:current-page="query.current"
+          v-model:page-size="query.size"
           :total="total"
           :page-sizes="[12, 24, 48]"
           layout="total, sizes, prev, pager, next"

@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { deleteProject, getProjectList, saveProject } from '@/api/project'
+import { deleteProject, getProjectPage, addProject, updateProject } from '@/api/project'
 import { uploadFile } from '@/api/file'
 import type { Project } from '@/api/types'
 
 const loading = ref(false)
 const list = ref<Project[]>([])
 const total = ref(0)
-const query = reactive({ page: 1, pageSize: 10, keyword: '' })
+const query = reactive({ current: 1, size: 10, keyword: '', featured: undefined as 0 | 1 | undefined })
 
 const dialogVisible = ref(false)
 const saving = ref(false)
-const editingId = ref<number | null>(null)
+const editingId = ref<string | null>(null)
 const formRef = ref()
 const form = reactive({
   name: '',
@@ -20,6 +20,8 @@ const form = reactive({
   technology: '',
   githubUrl: '',
   image: '',
+  deployment: '',
+  featured: 0 as 0 | 1,
 })
 
 const rules = {
@@ -30,12 +32,13 @@ const rules = {
 async function load() {
   loading.value = true
   try {
-    const res = await getProjectList({
-      page: query.page,
-      pageSize: query.pageSize,
+    const res = await getProjectPage({
+      current: query.current,
+      size: query.size,
       keyword: query.keyword || undefined,
+      featured: query.featured,
     })
-    list.value = res.list
+    list.value = res.records
     total.value = res.total
   } finally {
     loading.value = false
@@ -43,12 +46,12 @@ async function load() {
 }
 
 function search() {
-  query.page = 1
+  query.current = 1
   load()
 }
 
 function handlePageChange(page: number) {
-  query.page = page
+  query.current = page
   load()
 }
 
@@ -58,6 +61,8 @@ function resetForm() {
   form.technology = ''
   form.githubUrl = ''
   form.image = ''
+  form.deployment = ''
+  form.featured = 0
 }
 
 function openCreate() {
@@ -73,6 +78,8 @@ function openEdit(row: Project) {
   form.technology = row.technology
   form.githubUrl = row.githubUrl
   form.image = row.image
+  form.deployment = row.deployment
+  form.featured = row.featured
   dialogVisible.value = true
 }
 
@@ -90,14 +97,20 @@ async function submit() {
   await formRef.value.validate()
   saving.value = true
   try {
-    await saveProject({
-      id: editingId.value ?? undefined,
+    const payload = {
       name: form.name,
       description: form.description,
       technology: form.technology,
       githubUrl: form.githubUrl,
       image: form.image,
-    })
+      deployment: form.deployment,
+      featured: form.featured,
+    }
+    if (editingId.value) {
+      await updateProject(editingId.value, payload)
+    } else {
+      await addProject(payload)
+    }
     ElMessage.success(editingId.value ? '项目已更新' : '项目已创建')
     dialogVisible.value = false
     load()
@@ -133,6 +146,18 @@ onMounted(load)
             @keyup.enter="search"
             @clear="search"
           />
+        </el-form-item>
+        <el-form-item label="精选">
+          <el-select
+            v-model="query.featured"
+            placeholder="全部项目"
+            clearable
+            class="w-32"
+            @change="search"
+          >
+            <el-option label="首页精选" :value="1" />
+            <el-option label="普通项目" :value="0" />
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="'Search'" @click="search">查询</el-button>
@@ -199,6 +224,19 @@ onMounted(load)
             <span v-else class="text-[#c0c4cc]">-</span>
           </template>
         </el-table-column>
+        <el-table-column label="精选" width="80" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.featured === 1 ? 'success' : 'info'" effect="plain">
+              {{ row.featured === 1 ? '精选' : '普通' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="deployment" label="部署方式" width="120">
+          <template #default="{ row }">
+            <span v-if="row.deployment">{{ row.deployment }}</span>
+            <span v-else class="text-[#c0c4cc]">-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="160" />
         <el-table-column label="操作" width="150" align="center">
           <template #default="{ row }">
@@ -210,8 +248,8 @@ onMounted(load)
 
       <div class="mt-4 flex justify-end">
         <el-pagination
-          v-model:current-page="query.page"
-          v-model:page-size="query.pageSize"
+          v-model:current-page="query.current"
+          v-model:page-size="query.size"
           :total="total"
           :page-sizes="[10, 20, 50]"
           layout="total, sizes, prev, pager, next"
@@ -246,6 +284,18 @@ onMounted(load)
         </el-form-item>
         <el-form-item label="Github 地址">
           <el-input v-model="form.githubUrl" placeholder="https://github.com/..." />
+        </el-form-item>
+        <el-form-item label="部署方式">
+          <el-input v-model="form.deployment" placeholder="如：Docker Compose、裸机部署" />
+        </el-form-item>
+        <el-form-item label="首页精选">
+          <el-switch
+            v-model="form.featured"
+            :active-value="1"
+            :inactive-value="0"
+            active-text="是"
+            inactive-text="否"
+          />
         </el-form-item>
         <el-form-item label="项目截图">
           <div class="flex items-start gap-3">

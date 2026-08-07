@@ -1,10 +1,12 @@
 import { registerMock } from '@/api/request'
 import { articles, categories, tags } from './db'
-import { fail, genId, now, ok, pageData } from './helpers'
+import { fail, genId, now, ok, pageResult } from './helpers'
 import type {
   Article,
+  ArticleAddParams,
   ArticleQuery,
-  ArticleSaveParams,
+  ArticleStatus,
+  ArticleUpdateParams,
   PageResult,
 } from '@/api/types'
 
@@ -22,15 +24,10 @@ function withRelations(list: Article[]): Article[] {
   })
 }
 
-function toId(n: number | string | undefined): number | undefined {
-  const v = Number(n)
-  return Number.isNaN(v) ? undefined : v
-}
-
-registerMock('get', '/admin/article/list', (config) => {
+registerMock('get', '/article/page', (config) => {
   const query = config.params as ArticleQuery
-  const page = query.page || 1
-  const pageSize = query.pageSize || 10
+  const current = Number(query.current) || 1
+  const size = Number(query.size) || 10
 
   let list = [...articles]
   if (query.keyword) {
@@ -40,49 +37,25 @@ registerMock('get', '/admin/article/list', (config) => {
     )
   }
   if (query.categoryId) {
-    list = list.filter((a) => a.categoryId === toId(query.categoryId))
+    list = list.filter((a) => a.categoryId === query.categoryId)
   }
   if (query.tagId) {
-    list = list.filter((a) => a.tagIds.includes(toId(query.tagId)!))
+    list = list.filter((a) => a.tagIds.includes(query.tagId!))
   }
-  if (query.status) {
-    list = list.filter((a) => a.status === query.status)
+  if (query.status !== undefined) {
+    list = list.filter((a) => a.status === Number(query.status))
   }
-  list.sort((a, b) => b.id - a.id)
+  list.sort((a, b) => Number(b.id) - Number(a.id))
 
-  const { total, list: slice } = pageData(list, page, pageSize)
-  return ok<PageResult<Article>>({ total, list: withRelations(slice) })
+  const { records, total, current: c, size: s } = pageResult(list, current, size)
+  return ok<PageResult<Article>>({ records: withRelations(records), total, current: c, size: s })
 })
 
-registerMock('get', /^\/admin\/article\/\d+$/, (config) => {
-  const id = Number((config.url as string).split('/').pop())
-  const article = articles.find((a) => a.id === id)
-  if (!article) return fail('文章不存在')
-  return ok<Article>(withRelations([article])[0])
-})
-
-registerMock('post', '/admin/article', (config) => {
-  const body = config.data as ArticleSaveParams
+registerMock('post', '/article', (config) => {
+  const body = config.data as ArticleAddParams
   if (!body.title.trim()) return fail('标题不能为空')
   if (!body.content.trim()) return fail('正文不能为空')
   if (!body.categoryId) return fail('请选择分类')
-
-  if (body.id) {
-    const idx = articles.findIndex((a) => a.id === body.id)
-    if (idx === -1) return fail('文章不存在')
-    articles[idx] = {
-      ...articles[idx],
-      title: body.title,
-      summary: body.summary,
-      content: body.content,
-      cover: body.cover,
-      categoryId: body.categoryId,
-      tagIds: body.tagIds,
-      status: body.status,
-      publishTime: body.status === 'published' ? now() : articles[idx].publishTime,
-    }
-    return ok<Article>(articles[idx])
-  }
 
   const article: Article = {
     id: genId(articles),
@@ -95,27 +68,48 @@ registerMock('post', '/admin/article', (config) => {
     viewCount: 0,
     status: body.status,
     createTime: now(),
-    publishTime: body.status === 'published' ? now() : undefined,
+    publishTime: body.status === 1 ? now() : undefined,
   }
   articles.unshift(article)
   return ok<Article>(article)
 })
 
-registerMock('delete', /^\/admin\/article\/\d+$/, (config) => {
-  const id = Number((config.url as string).split('/').pop())
+registerMock('put', /^\/article\/.+$/, (config) => {
+  const id = (config.url as string).split('/').pop()!
+  const body = config.data as ArticleUpdateParams
+  if (!body.title.trim()) return fail('标题不能为空')
+  if (!body.content.trim()) return fail('正文不能为空')
+  if (!body.categoryId) return fail('请选择分类')
+
+  const idx = articles.findIndex((a) => a.id === id)
+  if (idx === -1) return fail('文章不存在')
+  articles[idx] = {
+    ...articles[idx],
+    title: body.title,
+    summary: body.summary,
+    content: body.content,
+    cover: body.cover,
+    categoryId: body.categoryId,
+    tagIds: body.tagIds,
+  }
+  return ok<Article>(articles[idx])
+})
+
+registerMock('delete', /^\/article\/.+$/, (config) => {
+  const id = (config.url as string).split('/').pop()!
   const idx = articles.findIndex((a) => a.id === id)
   if (idx === -1) return fail('文章不存在')
   articles.splice(idx, 1)
   return ok(null)
 })
 
-registerMock('patch', /^\/admin\/article\/\d+\/status$/, (config) => {
+registerMock('patch', /^\/article\/.+\/status$/, (config) => {
   const segments = (config.url as string).split('/')
-  const id = Number(segments[3])
-  const status = config.data?.status
+  const id = segments[segments.length - 2]
+  const status = Number(config.data?.status) as ArticleStatus
   const article = articles.find((a) => a.id === id)
   if (!article) return fail('文章不存在')
   article.status = status
-  article.publishTime = status === 'published' ? now() : article.publishTime
+  article.publishTime = status === 1 ? now() : article.publishTime
   return ok(article)
 })

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { deleteTag, getTagList, saveTag } from '@/api/tag'
+import { deleteTag, getTagList, addTag, updateTag } from '@/api/tag'
 import type { Tag } from '@/api/types'
 
 const loading = ref(false)
@@ -9,7 +9,7 @@ const list = ref<Tag[]>([])
 
 const dialogVisible = ref(false)
 const saving = ref(false)
-const editingId = ref<number | null>(null)
+const editingId = ref<string | null>(null)
 const formRef = ref()
 const form = reactive({ name: '' })
 
@@ -42,10 +42,12 @@ async function submit() {
   await formRef.value.validate()
   saving.value = true
   try {
-    await saveTag({
-      id: editingId.value ?? undefined,
-      name: form.name,
-    })
+    const payload = { name: form.name }
+    if (editingId.value) {
+      await updateTag(editingId.value, payload)
+    } else {
+      await addTag(payload)
+    }
     ElMessage.success(editingId.value ? '标签已更新' : '标签已创建')
     dialogVisible.value = false
     load()

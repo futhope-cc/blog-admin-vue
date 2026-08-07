@@ -5,3 +5,12 @@ declare module '*.vue' {
   const component: DefineComponent<{}, {}, any>
   export default component
 }
+
+interface AppConfig {
+  apiBaseUrl?: string
+  requestTimeout?: number
+}
+
+interface Window {
+  __APP_CONFIG__?: AppConfig
+}

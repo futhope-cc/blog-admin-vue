@@ -10,7 +10,7 @@ const router = useRouter()
 const loading = ref(true)
 const stats = ref<DashboardStats | null>(null)
 
-function goEdit(id: number) {
+function goEdit(id: string) {
   router.push(`/article/edit/${id}`)
 }
 

@@ -9,35 +9,48 @@ export interface ApiResponse<T = unknown> {
   data: T
 }
 
+const SUCCESS_CODE = 0
+
+const appConfig = window.__APP_CONFIG__ ?? {}
+
 const service = axios.create({
-  baseURL: '/api',
-  timeout: 15000,
+  baseURL: appConfig.apiBaseUrl ?? '/api',
+  timeout: appConfig.requestTimeout ?? 15000,
 })
 
 service.interceptors.request.use((config) => {
   const userStore = useUserStore()
   if (userStore.token) {
-    config.headers.Authorization = `Bearer ${userStore.token}`
+    config.headers['satoken'] = userStore.token
   }
   return config
 })
 
+function handleUnauthorized() {
+  const userStore = useUserStore()
+  userStore.reset()
+  if (window.location.pathname !== '/login') {
+    ElMessage.warning('登录已过期，请重新登录')
+    window.location.href = '/login'
+  }
+}
+
 service.interceptors.response.use(
   (response): any => {
     const res = response.data as ApiResponse
-    if (res.code !== 200) {
-      ElMessage.error(res.message || '请求失败')
+    if (res.code !== SUCCESS_CODE) {
+      if (res.code === 401) {
+        handleUnauthorized()
+      } else {
+        ElMessage.error(res.message || '请求失败')
+      }
       return Promise.reject(new Error(res.message || '请求失败'))
     }
     return res.data
   },
   (error) => {
     if (error.response?.status === 401) {
-      const userStore = useUserStore()
-      userStore.logout()
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
-      }
+      handleUnauthorized()
     }
     ElMessage.error(error.response?.data?.message || error.message || '网络错误')
     return Promise.reject(error)
@@ -72,7 +85,7 @@ function matchMock(config: AxiosRequestConfig): MockHandler | undefined {
   })
 }
 
-const MOCK_ENABLED = true
+const MOCK_ENABLED = false
 
 export function request<T = unknown>(config: AxiosRequestConfig): Promise<T> {
   const mock = matchMock(config)
@@ -80,8 +93,12 @@ export function request<T = unknown>(config: AxiosRequestConfig): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       setTimeout(() => {
         const res = mock.handler(config)
-        if (res.code !== 200) {
-          ElMessage.error(res.message || '请求失败')
+        if (res.code !== SUCCESS_CODE) {
+          if (res.code === 401) {
+            handleUnauthorized()
+          } else {
+            ElMessage.error(res.message || '请求失败')
+          }
           reject(new Error(res.message))
           return
         }

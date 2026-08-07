@@ -1,46 +1,48 @@
 import request from './request'
 import type {
   Article,
+  ArticleAddParams,
   ArticleQuery,
-  ArticleSaveParams,
   ArticleStatus,
+  ArticleUpdateParams,
   PageResult,
 } from './types'
 
-export function getArticleList(params: ArticleQuery) {
+export function getArticlePage(params: ArticleQuery) {
   return request<PageResult<Article>>({
     method: 'get',
-    url: '/admin/article/list',
+    url: '/article/page',
     params,
   })
 }
 
-export function getArticleDetail(id: number) {
-  return request<Article>({
-    method: 'get',
-    url: `/admin/article/${id}`,
-  })
-}
-
-export function saveArticle(data: ArticleSaveParams) {
+export function addArticle(data: ArticleAddParams) {
   return request<Article>({
     method: 'post',
-    url: '/admin/article',
+    url: '/article',
     data,
   })
 }
 
-export function deleteArticle(id: number) {
-  return request<null>({
-    method: 'delete',
-    url: `/admin/article/${id}`,
+export function updateArticle(id: string, data: ArticleUpdateParams) {
+  return request<Article>({
+    method: 'put',
+    url: `/article/${id}`,
+    data,
   })
 }
 
-export function updateArticleStatus(id: number, status: ArticleStatus) {
+export function deleteArticle(id: string) {
+  return request<null>({
+    method: 'delete',
+    url: `/article/${id}`,
+  })
+}
+
+export function updateArticleStatus(id: string, status: ArticleStatus) {
   return request<Article>({
     method: 'patch',
-    url: `/admin/article/${id}/status`,
+    url: `/article/${id}/status`,
     data: { status },
   })
 }

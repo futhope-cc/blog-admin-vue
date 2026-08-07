@@ -1,27 +1,29 @@
 import type { ApiResponse } from '@/api/request'
 
 export function ok<T>(data: T): ApiResponse<T> {
-  return { code: 200, message: 'ok', data }
+  return { code: 0, message: 'success', data }
 }
 
-export function fail(message: string): ApiResponse<null> {
-  return { code: 500, message, data: null }
+export function fail(message: string, code = 500): ApiResponse<null> {
+  return { code, message, data: null }
 }
 
-export function pageData<T>(list: T[], page: number, pageSize: number) {
-  const start = (page - 1) * pageSize
+export function pageResult<T>(list: T[], current: number, size: number) {
+  const start = (current - 1) * size
   return {
+    records: list.slice(start, start + size),
     total: list.length,
-    list: list.slice(start, start + pageSize),
+    current,
+    size,
   }
 }
 
-export function genId(list: Array<{ id: number }>): number {
-  return list.length ? Math.max(...list.map((i) => i.id)) + 1 : 1
+export function genId(list: Array<{ id: string }>): string {
+  return String(list.reduce((m, i) => Math.max(m, Number(i.id)), 0) + 1)
 }
 
 export function now(): string {
   const d = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
 }
