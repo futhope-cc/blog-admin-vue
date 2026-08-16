@@ -10,6 +10,7 @@ import {
 import { getCategoryList } from '@/api/category'
 import { getTagList } from '@/api/tag'
 import { ARTICLE_STATUS, type Article, type ArticleStatus, type Category, type Tag } from '@/api/types'
+import { setArticleEditCache } from '@/stores/articleEditCache'
 
 const router = useRouter()
 const loading = ref(false)
@@ -74,9 +75,15 @@ function goCreate() {
 }
 
 function goEdit(row: Article) {
+  if (!row.id) {
+    ElMessage.warning('文章数据缺少 id，无法编辑')
+    return
+  }
+  const article = JSON.parse(JSON.stringify(row)) as Article
+  setArticleEditCache(article)
   router.push({
     path: `/article/edit/${row.id}`,
-    state: { article: row } as Record<string, any>,
+    state: { article } as Record<string, any>,
   })
 }
 

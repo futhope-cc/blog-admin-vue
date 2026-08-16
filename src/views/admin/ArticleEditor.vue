@@ -7,13 +7,14 @@ import { getCategoryList } from '@/api/category'
 import { getTagList } from '@/api/tag'
 import { uploadFile } from '@/api/file'
 import { ARTICLE_STATUS, type Article, type ArticleStatus, type Category, type Tag } from '@/api/types'
+import { getArticleEditCache } from '@/stores/articleEditCache'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const isEdit = computed(() => !!route.params.id)
-const articleId = route.params.id as string
+const articleId = computed(() => route.params.id as string)
 
 const loading = ref(false)
 const saving = ref(false)
@@ -40,9 +41,15 @@ const rules = {
 }
 
 async function loadDetail() {
-  if (!isEdit) return
-  const record = (history.state as { article?: Article })?.article
-  if (!record || record.id !== articleId) {
+  if (!isEdit.value) return
+  if (!articleId.value || articleId.value === 'undefined') {
+    ElMessage.warning('文章参数不合法，请从文章列表进入编辑')
+    router.push('/article/list')
+    return
+  }
+  const record =
+    (history.state as { article?: Article })?.article ?? getArticleEditCache(articleId.value)
+  if (!record || record.id !== articleId.value) {
     ElMessage.warning('请从文章列表进入编辑')
     router.push('/article/list')
     return
@@ -78,8 +85,8 @@ async function submit(status: ArticleStatus) {
       categoryId: form.categoryId!,
       tagIds: form.tagIds,
     }
-    if (isEdit) {
-      await updateArticle(articleId, payload)
+    if (isEdit.value) {
+      await updateArticle(articleId.value, payload)
     } else {
       await addArticle({ ...payload, status })
     }
@@ -92,8 +99,8 @@ async function submit(status: ArticleStatus) {
 
 onMounted(async () => {
   const [catRes, tagRes] = await Promise.all([
-    getCategoryList(),
-    getTagList(),
+    getCategoryList().catch(() => []),
+    getTagList().catch(() => []),
   ])
   categories.value = catRes
   tags.value = tagRes

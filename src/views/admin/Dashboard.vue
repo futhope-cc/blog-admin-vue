@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import type { EChartsOption } from 'echarts'
 import { getDashboardStats } from '@/api/stats'
 import type { DashboardStats, HotArticle } from '@/api/types'
@@ -11,6 +12,10 @@ const loading = ref(true)
 const stats = ref<DashboardStats | null>(null)
 
 function goEdit(id: string) {
+  if (!id) {
+    ElMessage.warning('热门文章缺少 id，无法直接编辑')
+    return
+  }
   router.push(`/article/edit/${id}`)
 }
 
