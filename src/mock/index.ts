@@ -1,5 +1,6 @@
 import './auth'
 import './article'
+import './profile'
 import './category'
 import './tag'
 import './project'

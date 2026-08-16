@@ -124,6 +124,32 @@ export interface ArticleUpdateParams {
   tagIds: string[]
 }
 
+export interface SiteProfile {
+  id: string
+  nickname: string
+  avatar: string
+  bio: string
+  techStack: string
+  socialLinks: string
+  email: string
+  github: string
+  directions?: string
+  workExperience?: string
+  updateTime: string
+}
+
+export interface SiteProfileUpdateParams {
+  nickname: string
+  avatar: string
+  bio: string
+  techStack: string
+  socialLinks: string
+  email: string
+  github: string
+  directions?: string
+  workExperience?: string
+}
+
 export interface Project {
   id: string
   name: string

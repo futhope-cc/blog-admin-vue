@@ -28,6 +28,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '用户管理' },
       },
       {
+        path: 'profile',
+        name: 'SiteProfileManage',
+        component: () => import('@/views/admin/SiteProfileManage.vue'),
+        meta: { title: '站长信息' },
+      },
+      {
         path: 'article/list',
         name: 'ArticleManage',
         component: () => import('@/views/admin/ArticleManage.vue'),

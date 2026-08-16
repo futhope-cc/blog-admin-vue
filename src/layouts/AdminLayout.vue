@@ -14,6 +14,7 @@ const userStore = useUserStore()
 const menus = [
   { path: '/dashboard', title: '仪表盘', icon: 'Odometer' },
   { path: '/user', title: '用户管理', icon: 'User' },
+  { path: '/profile', title: '站长信息', icon: 'Avatar' },
   { path: '/article/list', title: '文章管理', icon: 'Document' },
   { path: '/category', title: '分类管理', icon: 'Files' },
   { path: '/tag', title: '标签管理', icon: 'CollectionTag' },
