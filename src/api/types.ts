@@ -133,6 +133,7 @@ export interface SiteProfile {
   socialLinks: string
   email: string
   github: string
+  copyright?: string
   directions?: string
   workExperience?: string
   updateTime: string
@@ -146,6 +147,7 @@ export interface SiteProfileUpdateParams {
   socialLinks: string
   email: string
   github: string
+  copyright?: string
   directions?: string
   workExperience?: string
 }

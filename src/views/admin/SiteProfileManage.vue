@@ -35,6 +35,7 @@ const form = reactive({
   socialLinks: '',
   email: '',
   github: '',
+  copyright: '',
   directions: [] as DirectionItem[],
   workExperience: [] as WorkItem[],
 })
@@ -64,6 +65,7 @@ async function load() {
     form.socialLinks = data.socialLinks ?? ''
     form.email = data.email ?? ''
     form.github = data.github ?? ''
+    form.copyright = data.copyright ?? ''
     form.directions = parseJsonArray<DirectionItem>(data.directions)
     form.workExperience = parseJsonArray<WorkItem>(data.workExperience)
     updateTime.value = data.updateTime ?? ''
@@ -110,6 +112,7 @@ async function submit() {
       socialLinks: form.socialLinks,
       email: form.email,
       github: form.github,
+      copyright: form.copyright,
       directions: form.directions.length ? JSON.stringify(form.directions) : '',
       workExperience: form.workExperience.length ? JSON.stringify(form.workExperience) : '',
     })
@@ -207,6 +210,13 @@ onMounted(load)
           type="textarea"
           :rows="3"
           placeholder='JSON 数组格式，如：[{"name":"GitHub","url":"https://github.com/用户名"}]'
+        />
+      </el-form-item>
+
+      <el-form-item label="备案号">
+        <el-input
+          v-model="form.copyright"
+          placeholder="如：粤ICP备XXXXXXXX号，为空则前台不展示"
         />
       </el-form-item>
 
