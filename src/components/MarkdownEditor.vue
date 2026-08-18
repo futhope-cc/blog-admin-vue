@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { ElMessage } from 'element-plus'
 import MarkdownPreview from './MarkdownPreview.vue'
+import { uploadFile } from '@/api/file'
 
 const props = defineProps<{ modelValue: string; height?: string }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
@@ -13,6 +15,7 @@ const content = computed({
 })
 
 const textareaRef = ref<HTMLTextAreaElement>()
+const fileInputRef = ref<HTMLInputElement>()
 
 function wrapText(prefix: string, suffix = '') {
   const ta = textareaRef.value
@@ -29,6 +32,31 @@ function wrapText(prefix: string, suffix = '') {
   })
 }
 
+function insertText(text: string) {
+  const ta = textareaRef.value
+  if (!ta) return
+  const start = ta.selectionStart
+  const next = content.value.slice(0, start) + text + content.value.slice(start)
+  content.value = next
+  requestAnimationFrame(() => {
+    ta.focus()
+    ta.setSelectionRange(start + text.length, start + text.length)
+  })
+}
+
+async function handleImageUpload(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  try {
+    const item = await uploadFile(file)
+    insertText(`![${file.name}](${item.url})`)
+  } catch {
+    // handled by request layer
+  }
+  input.value = ''
+}
+
 const actions = [
   { label: 'H1', icon: 'Heading', handler: () => wrapText('# ') },
   { label: 'H2', icon: 'Sunny', handler: () => wrapText('## ') },
@@ -39,12 +67,8 @@ const actions = [
   { label: '无序列表', icon: 'List', handler: () => wrapText('- ') },
   { label: '有序列表', icon: 'ListFilled', handler: () => wrapText('1. ') },
   { label: '链接', icon: 'Link', handler: () => wrapText('[', '](https://)') },
-  {
-    label: '图片',
-    icon: 'Picture',
-    handler: () => wrapText('![图片描述](', ')'),
-  },
-  { label: '代码', icon: 'Cpu', handler: () => wrapText('`', '`') },
+  { label: '图片', icon: 'Picture', handler: () => fileInputRef.value?.click() },
+  { label: '行内代码', icon: 'Cpu', handler: () => wrapText('`', '`') },
   {
     label: '代码块',
     icon: 'Document',
@@ -52,10 +76,19 @@ const actions = [
   },
   { label: '表格', icon: 'Grid', handler: () => wrapText('| 列1 | 列2 |\n| --- | --- |\n| ', ' |') },
 ]
+
+const textIcons: Record<string, string> = { Heading: 'H', Sunny: 'H₂', Bold: 'B', Italic: 'I', ListFilled: '1.' }
 </script>
 
 <template>
   <div class="flex flex-col overflow-hidden rounded border border-[#dcdfe6]">
+    <input
+      ref="fileInputRef"
+      type="file"
+      accept="image/*"
+      class="hidden"
+      @change="handleImageUpload"
+    />
     <div class="flex items-center justify-between border-b border-[#e4e7ed] bg-white px-2 py-1">
       <div class="flex flex-wrap items-center gap-1">
         <el-tooltip
@@ -69,7 +102,8 @@ const actions = [
             class="flex h-7 w-7 cursor-pointer items-center justify-center rounded hover:bg-[#ecf5ff] hover:text-[#409eff]"
             @click="a.handler"
           >
-            <el-icon><component :is="a.icon" /></el-icon>
+            <span v-if="textIcons[a.icon]" class="text-sm font-bold">{{ textIcons[a.icon] }}</span>
+            <el-icon v-else><component :is="a.icon" /></el-icon>
           </button>
         </el-tooltip>
       </div>
@@ -81,8 +115,8 @@ const actions = [
     </div>
 
     <div
-      class="flex min-h-0 flex-1"
-      :style="{ height: height || '480px' }"
+      class="flex shrink-0"
+      :style="{ height: height || '560px' }"
     >
       <div
         v-show="mode === 'edit' || mode === 'split'"

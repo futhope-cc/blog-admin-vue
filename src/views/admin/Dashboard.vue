@@ -30,6 +30,17 @@ const cards = computed(() => {
   ]
 })
 
+function isoWeekToLabel(week: string): string {
+  const match = week.match(/^(\d{4})-W(\d{1,2})$/)
+  if (!match) return week
+  const year = Number(match[1])
+  const w = Number(match[2])
+  const jan4 = new Date(year, 0, 4)
+  const start = new Date(jan4)
+  start.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7) + (w - 1) * 7)
+  return `${start.getMonth() + 1}/${start.getDate()}`
+}
+
 const trendOption = computed<EChartsOption>(() => {
   const trend = stats.value?.trend ?? []
   return {
@@ -37,7 +48,7 @@ const trendOption = computed<EChartsOption>(() => {
     grid: { left: 16, right: 16, top: 36, bottom: 16, containLabel: true },
     xAxis: {
       type: 'category',
-      data: trend.map((t) => t.week),
+      data: trend.map((t) => isoWeekToLabel(t.week)),
     },
     yAxis: [{ type: 'value', name: '文章数' }],
     series: [
