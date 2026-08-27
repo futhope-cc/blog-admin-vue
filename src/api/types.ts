@@ -132,7 +132,7 @@ export interface SiteProfile {
   techStack: string
   socialLinks: string
   email: string
-  github: string
+  gitee: string
   copyright?: string
   directions?: string
   workExperience?: string
@@ -146,7 +146,7 @@ export interface SiteProfileUpdateParams {
   techStack: string
   socialLinks: string
   email: string
-  github: string
+  gitee: string
   copyright?: string
   directions?: string
   workExperience?: string
@@ -157,7 +157,7 @@ export interface Project {
   name: string
   description: string
   technology: string
-  githubUrl: string
+  giteeUrl: string
   image: string
   deployment: string
   featured: 0 | 1
@@ -175,7 +175,7 @@ export interface ProjectRequest {
   name: string
   description: string
   technology: string
-  githubUrl: string
+  giteeUrl: string
   image: string
   deployment: string
   featured: 0 | 1

@@ -34,7 +34,7 @@ const form = reactive({
   techStack: '',
   socialLinks: '',
   email: '',
-  github: '',
+  gitee: '',
   copyright: '',
   directions: [] as DirectionItem[],
   workExperience: [] as WorkItem[],
@@ -64,7 +64,7 @@ async function load() {
     form.techStack = data.techStack ?? ''
     form.socialLinks = data.socialLinks ?? ''
     form.email = data.email ?? ''
-    form.github = data.github ?? ''
+    form.gitee = data.gitee ?? ''
     form.copyright = data.copyright ?? ''
     form.directions = parseJsonArray<DirectionItem>(data.directions)
     form.workExperience = parseJsonArray<WorkItem>(data.workExperience)
@@ -111,7 +111,7 @@ async function submit() {
       techStack: form.techStack,
       socialLinks: form.socialLinks,
       email: form.email,
-      github: form.github,
+      gitee: form.gitee,
       copyright: form.copyright,
       directions: form.directions.length ? JSON.stringify(form.directions) : '',
       workExperience: form.workExperience.length ? JSON.stringify(form.workExperience) : '',
@@ -200,8 +200,8 @@ onMounted(load)
         <el-input v-model="form.email" placeholder="请输入邮箱" />
       </el-form-item>
 
-      <el-form-item label="GitHub">
-        <el-input v-model="form.github" placeholder="https://github.com/用户名" />
+      <el-form-item label="Gitee">
+        <el-input v-model="form.gitee" placeholder="https://gitee.com/用户名" />
       </el-form-item>
 
       <el-form-item label="社交链接">
@@ -209,7 +209,7 @@ onMounted(load)
           v-model="form.socialLinks"
           type="textarea"
           :rows="3"
-          placeholder='JSON 数组格式，如：[{"name":"GitHub","url":"https://github.com/用户名"}]'
+          placeholder='JSON 数组格式，如：[{"name":"Gitee","url":"https://gitee.com/用户名"}]'
         />
       </el-form-item>
 

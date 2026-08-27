@@ -18,7 +18,7 @@ const form = reactive({
   name: '',
   description: '',
   technology: '',
-  githubUrl: '',
+  giteeUrl: '',
   image: '',
   deployment: '',
   featured: 0 as 0 | 1,
@@ -59,7 +59,7 @@ function resetForm() {
   form.name = ''
   form.description = ''
   form.technology = ''
-  form.githubUrl = ''
+  form.giteeUrl = ''
   form.image = ''
   form.deployment = ''
   form.featured = 0
@@ -76,7 +76,7 @@ function openEdit(row: Project) {
   form.name = row.name
   form.description = row.description
   form.technology = row.technology
-  form.githubUrl = row.githubUrl
+  form.giteeUrl = row.giteeUrl
   form.image = row.image
   form.deployment = row.deployment
   form.featured = row.featured
@@ -101,7 +101,7 @@ async function submit() {
       name: form.name,
       description: form.description,
       technology: form.technology,
-      githubUrl: form.githubUrl,
+      giteeUrl: form.giteeUrl,
       image: form.image,
       deployment: form.deployment,
       featured: form.featured,
@@ -211,11 +211,11 @@ onMounted(load)
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="Github" width="140">
+        <el-table-column label="Gitee" width="140">
           <template #default="{ row }">
             <a
-              v-if="row.githubUrl"
-              :href="row.githubUrl"
+              v-if="row.giteeUrl"
+              :href="row.giteeUrl"
               target="_blank"
               class="text-[#409eff] hover:underline"
             >
@@ -282,8 +282,8 @@ onMounted(load)
             placeholder="用逗号分隔，如：Vue3, Spring Boot, MySQL"
           />
         </el-form-item>
-        <el-form-item label="Github 地址">
-          <el-input v-model="form.githubUrl" placeholder="https://github.com/..." />
+        <el-form-item label="Gitee 地址">
+          <el-input v-model="form.giteeUrl" placeholder="https://gitee.com/..." />
         </el-form-item>
         <el-form-item label="部署方式">
           <el-input v-model="form.deployment" placeholder="如：Docker Compose、裸机部署" />
